@@ -1,4 +1,6 @@
-# ReadMe: Ribosome
+# ReadMe
+
+### Ribosome
 
 Ribosome is a prototype built on Godot engine intended as a segment of a larger interactive educational experience. Which is designed to tackle the central dogma of molecular biology using different interactive tools, games and simulations.
 
