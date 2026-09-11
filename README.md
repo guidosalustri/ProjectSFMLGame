@@ -1,23 +1,68 @@
-# ReadMe
+# Ribosome — C++ / SFML
 
-### Ribosome
+A small arcade game about protein synthesis, written in C++ without a game engine.
 
-Ribosome is a prototype built on Godot engine intended as a segment of a larger interactive educational experience. Which is designed to tackle the central dogma of molecular biology using different interactive tools, games and simulations.
+You play a ribosome moving through the cell, collecting amino acids to build a peptide.
+Each amino acid has a colour. Collect one matching your current colour and you score a
+point, change colour, and speed up. Collect a mismatched one and you still pick it up,
+but score nothing and slow down. The run lasts five spawn waves, after which you enter
+your name and your score is written to a persistent leaderboard.
 
-Ribosome revolves around cell translation, meaning decoding RNA to amino acids chains. It is developed for children to learn and explore in a playful way the cell translation process on a molecular level, where a sequence of ARN needs to be typed for the game to start. The Input to build the sequence can only be A/C/G/U , letters that represent the RNA nucleotides (letters other than those will make the prototype crash). Once the input  is loaded the player needs to move the ribosome, pick up the ARN sequence and start collecting the right amino acids that match the ARN codons. If the wrong amino acid is picked, it will get stuck in the ribosome for a short while, making the player lose time. The game is scored by a timer.
+This was my first attempt at building a game.
 
-The game intends to teach in two different levels. By just playing it, one will be guided through the translation mechanisms and on how decoding biological sequences works. However, one can also learn how to code some of the game dynamics by accessing the source code. This will provide insights of basic programming skills, such as building dictionaries for decoding the  ARN codons, or exploring the physics of moving objects using vectors, interacting with list iterations, or being able to read and make sense out of someone else's code. That's one of the reasons why we used Godot, an open source engine that employs GDscript as a programming language which is built from Python and will surely make a much more friendly learning experience than other languages.
+## No engine
 
-So far the dynamic of the game and the physics has been coded but the biological decoding
-still needs to be done, so for the time being, the matching from codons to amino acids is just by colors. Nevertheless, the prototype still gives a  fair good idea of how the game will work.
+There's no Unity, Unreal or Godot here. **SFML is a media library, not an engine** — it
+provides a window, a render target, an input event queue and a clock, and nothing else.
+There is no scene tree, no entity system, no physics, no collision detection, no game
+loop.
 
-As mentioned before Ribosome is a segment of a larger interactive educational experience composed of other three segments. Each segment explores a mechanism which is key for all cell functions: DNA replication, transcription, translation and protein folding to native structure. After being introduced to these processes, learners are intended to solve puzzles or interactive games that will provide further insights and understanding of the topics with a hand-on approach.
+All of that is written from scratch in this repository, which was the point of the
+exercise: to build the parts an engine would normally hide.
 
-For example, for the transcription segment a puzzle may be presented where transcription factors and other molecules will need to be properly assembled in the DNA recognition segments (such as TATA-box, etc.) of a given gene for transcription to begin. We aim in this way to create a proper environment for students to incorporate such concepts while always keeping in mind that fun is a key tool  to improve learning and focus.
+## Architecture
 
-Regarding DNA replication, the goal could be to aid the DNA polymerase in replication by typing the corresponding nucleotides as fast as possible; this could be used to introduce concepts such as miss matches, mutations, accuracy rate, SNPs, mutation rate, etc.
+**`RibosomeGame/`** — the game
 
-A way to introduce protein structure, may be a game with a similar display as “Guitar Hero” where,  while helping proteins to “move and dance to a given song” one can guide them through their folding journey until they get to their native structure, showing mainly the display of three dimensional proteins, the two stage models of protein folding, protein folding simulations, AlphaFold and crystallize proteins.
+| | |
+|---|---|
+| `Game` | Owns the main loop: poll input, update at delta time, render, present |
+| `Entity` | Abstract base deriving from `sf::Sprite`, with pure virtual `Update` and `ResolveCollision` |
+| `Ribosome` | The player entity — movement, colour state, speed modifiers |
+| `Enemy` | The collectible amino acids — spawning, timing, colour assignment |
+| `EntityManager` | Entity registration and lifetime |
+| `CollisionManager` | Singleton holding the entity list, detecting overlaps and dispatching resolution |
 
-In this way, throughout the whole learning experience one can explore different genes and follow the paths along the cell until getting to the protein's native structure and relate them with their function.
+**`HighScoreManager/`** — a separate project handling score persistence
+
+| | |
+|---|---|
+| `Score` | A name and value, with equality comparison |
+| `leaderBoard` | An ordered score collection with top-N insertion |
+| | Read and write to `Scores.dat` between sessions |
+
+Updates are delta-time based, so movement speed is independent of frame rate.
+
+## Building
+
+Visual Studio solution: `ProjectSFMLGame/ProjectSFMLGame.sln`.
+
+SFML 2.x is vendored under `libs/SFML/`, so the solution should build without installing
+anything. Windows only — the project files are MSVC-specific.
+
+## Known issues
+
+Documented from testing rather than discovered by someone else:
+
+- The `Game` destructor isn't invoked on exit
+- If an amino acid spawns directly on top of the ribosome, the follow behaviour breaks
+- The ribosome's background colour makes some collectible colours hard to read,
+  magenta especially
+- Name entry reads into a fixed-width buffer without bounds checking
+- `Source.cpp` includes a `.cpp` file directly rather than its header
+
+## Notes
+
+Scope was cut down substantially from the original design. Source comments are in
+Spanish. Textures and font are from open asset packs.
 
